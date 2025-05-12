@@ -16,6 +16,7 @@ public class Animal {
     
     // Constructor for enemy animals
     public Animal(String type) {
+        //new comment
         rand = new Random();
         this.type = type;
         this.isPlayer = false;
