@@ -23,7 +23,7 @@ public class ServerThread implements Runnable {
         this.playerId = null;
         this.playerX = 0;
         this.playerY = 0;
-        this.playerColor = "255,255,255"; // Default white
+        this.playerColor = "255,255,255"; 
         
         try {
             out = new PrintWriter(socket.getOutputStream(), true);
@@ -33,7 +33,6 @@ public class ServerThread implements Runnable {
         }
     }
     
-    // Constructor for the ServerScreen code which may not expect a Manager parameter
     public ServerThread(Socket socket) {
         this(socket, null);
     }
@@ -70,25 +69,19 @@ public class ServerThread implements Runnable {
             manager.addPlayer(playerId);
             System.out.println("Player connected: " + playerId);
             
-            // Send current game state to new player
             sendMessage(manager.getCurrentGameState());
             
-            // Broadcast new player to everyone
             manager.broadcastPlayerPosition(playerId, playerX, playerY, playerColor);
         } else if (parts[0].equals("READY")) {
             playerId = parts[1];
             isReady = true;
             manager.playerReady();
         } else if (parts[0].equals("POS")) {
-            // Player position update
             playerId = parts[1];
             playerX = Integer.parseInt(parts[2]);
             playerY = Integer.parseInt(parts[3]);
             
-            // Broadcast position to all other players
             manager.broadcastPlayerPosition(playerId, playerX, playerY, playerColor);
-            
-            // Check if player collected food
             manager.checkFoodCollision(playerId, playerX, playerY);
         } else if (parts[0].equals("SCORE")) {
             String player = parts[1];
@@ -104,9 +97,7 @@ public class ServerThread implements Runnable {
             String enemyId = parts[2];
             manager.handlePlayerEnemyCollision(player, enemyId);
         } else if (parts[0].equals("ALIVE")) {
-            // Heartbeat message, do nothing
         } else if (parts[0].equals("GAMEOVER")) {
-            // Player triggered game over
             manager.gameOver();
         } else if (parts[0].equals("RESET")) {
             isReady = false;
@@ -118,7 +109,6 @@ public class ServerThread implements Runnable {
         out.println(message);
     }
     
-    // Required getter methods
     public boolean isReady() {
         return isReady;
     }
@@ -143,7 +133,6 @@ public class ServerThread implements Runnable {
         return playerColor;
     }
     
-    // Additional helper methods
     public void setPlayerId(String playerId) {
         this.playerId = playerId;
     }

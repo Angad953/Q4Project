@@ -2,9 +2,9 @@ import java.awt.*;
 import java.util.*;
 
 public class Manager {
-    public int totalScore; // total score of all users
-    public int numAnimals; // tracks the number of animals users have prevented from stealing food
-    public ArrayList<ServerThread> serverThreads; // list of all server threads
+    public int totalScore; 
+    public int numAnimals;
+    public ArrayList<ServerThread> serverThreads; 
     private HashMap<String, Integer> playerScores;
     private ArrayList<Food> foods;
     private ArrayList<Enemy> enemies;
@@ -72,7 +72,7 @@ public class Manager {
         gameStarted = false;
         readyCount = 0;
         resetRequests = 0;
-        gameTime = 120; // 2 minutes
+        gameTime = 120; 
 
         // Preload some food
         for (int i = 0; i < 20; i++) {
@@ -80,7 +80,7 @@ public class Manager {
             foods.add(new Food(rand.nextInt(700) + 50, rand.nextInt(500) + 50));
         }
 
-        // Start a thread for game logic updates
+        // game logic thread
         new Thread(() -> {
             while (true) {
                 try {
@@ -98,13 +98,11 @@ public class Manager {
     private void updateGameState() {
         Random rand = new Random();
 
-        // Update existing enemies
+        // enemy movement logic
         for (Enemy enemy : enemies) {
-            // Move toward center with some randomness
             int centerX = 400;
             int centerY = 300;
 
-            // Calculate direction to center
             double dx = centerX - enemy.x;
             double dy = centerY - enemy.y;
             double length = Math.sqrt(dx * dx + dy * dy);
@@ -114,19 +112,16 @@ public class Manager {
                 dy /= length;
             }
 
-            // Add some randomness to movement
             dx += (rand.nextDouble() - 0.5) * 0.5;
             dy += (rand.nextDouble() - 0.5) * 0.5;
 
-            // Move enemy
             enemy.x += dx * 3;
             enemy.y += dy * 3;
 
-            // Broadcast enemy position
             broadcastEnemyPosition(enemy.id, enemy.x, enemy.y, enemy.size);
         }
 
-        // Check collisions between enemies and food
+        // enemy/food collision check
         for (Enemy enemy : enemies) {
             Rectangle enemyBounds = new Rectangle(enemy.x, enemy.y, enemy.size, enemy.size);
             for (Food food : foods) {
@@ -140,7 +135,7 @@ public class Manager {
             }
         }
 
-        // Occasionally add new food
+        // food spawn logic
         if (rand.nextDouble() < 0.05 && foods.size() < 50) {
             Food newFood = new Food(rand.nextInt(700) + 50, rand.nextInt(500) + 50);
             foods.add(newFood);
@@ -148,43 +143,21 @@ public class Manager {
         }
 
         long currentTime = System.currentTimeMillis();
+
+        //enemy spawn logic
         if (gameStarted && currentTime >= nextEnemySpawnTime && enemies.size() < 5) {
-            // Time to spawn a new enemy
             Enemy newEnemy = new Enemy();
             enemies.add(newEnemy);
             broadcastEnemyPosition(newEnemy.id, newEnemy.x, newEnemy.y, newEnemy.size);
 
-            // Schedule next spawn
             nextEnemySpawnTime = currentTime + ENEMY_SPAWN_INTERVAL;
             System.out.println("[" + currentTime + "] Enemy spawned. Total enemies: " + enemies.size() +
                     ". Next spawn at: " + nextEnemySpawnTime);
         }
 
-        for (Enemy enemy : enemies) {
-            // Calculate direction to center
-            int centerX = 400;
-            int centerY = 300;
-            double dx = centerX - enemy.x;
-            double dy = centerY - enemy.y;
 
-            // Normalize to get direction
-            double length = Math.sqrt(dx * dx + dy * dy);
-            if (length > 0) {
-                dx /= length;
-                dy /= length;
-            }
-
-            // Move enemy at constant speed
-            enemy.x += dx * 2;
-            enemy.y += dy * 2;
-
-            // Broadcast position update
-            broadcastEnemyPosition(enemy.id, enemy.x, enemy.y, enemy.size);
-        }
-
-        // Remove food that is too old (clean up)
         if (foods.size() > 50) {
-            foods.remove(0); // Remove oldest food
+            foods.remove(0); 
         }
     }
 
@@ -199,7 +172,6 @@ public class Manager {
             readyCount--;
         }
 
-        // Remove player from scores
         if (thread.getPlayerId() != null) {
             playerScores.remove(thread.getPlayerId());
         }
@@ -213,7 +185,6 @@ public class Manager {
         readyCount++;
         broadcast("READY:" + readyCount + ":" + serverThreads.size());
 
-        // If all players are ready, start the game
         if (readyCount == serverThreads.size() && serverThreads.size() > 0) {
             startGame();
         }
@@ -223,7 +194,6 @@ public class Manager {
         gameStarted = true;
         broadcast("START");
 
-        // Start game timer
         gameTime = 120;
         gameTimer = new Timer();
         gameTimer.schedule(new TimerTask() {
@@ -235,13 +205,12 @@ public class Manager {
                     this.cancel();
                 }
             }
-        }, 1000, 1000); // Update every second
+        }, 1000, 1000); 
     }
 
     public synchronized void updateScore(String player, int score) {
         playerScores.put(player, score);
         totalScore = 0;
-        // Recalculate total score
         for (Integer s : playerScores.values()) {
             totalScore += s;
         }
@@ -250,7 +219,6 @@ public class Manager {
 
     public synchronized void incrementAnimals() {
         numAnimals++;
-        // Broadcast animal count to keep clients synchronized
         broadcast("ANIMALCOUNT:" + numAnimals);
     }
 
@@ -266,7 +234,6 @@ public class Manager {
     public synchronized void resetRequest() {
         resetRequests++;
 
-        // If all players want to reset, do it
         if (resetRequests == serverThreads.size() && serverThreads.size() > 0) {
             resetGame();
         }
@@ -280,16 +247,13 @@ public class Manager {
         numAnimals = 0;
         playerScores.clear();
 
-        // Reset all players
         for (ServerThread thread : serverThreads) {
             thread.setReady(false);
         }
 
-        // Reset food and enemies
         foods.clear();
         enemies.clear();
 
-        // Preload some food
         Random rand = new Random();
         for (int i = 0; i < 20; i++) {
             foods.add(new Food(rand.nextInt(700) + 50, rand.nextInt(500) + 50));
@@ -350,13 +314,10 @@ public class Manager {
     }
 
     public String getCurrentGameState() {
-        // Build a complete game state message for new clients
         StringBuilder sb = new StringBuilder();
         sb.append("SYNC:");
 
-        // Add player count and player data
         int validPlayers = 0;
-        // First count valid players (with non-null IDs)
         for (ServerThread thread : serverThreads) {
             if (thread.getPlayerId() != null) {
                 validPlayers++;
@@ -374,7 +335,6 @@ public class Manager {
             }
         }
 
-        // Add food count and food data
         sb.append(foods.size()).append(":");
         for (Food food : foods) {
             sb.append(food.x).append(":");
@@ -391,21 +351,18 @@ public class Manager {
             sb.append(enemy.size).append(":");
         }
 
-        // Add scores data
         sb.append(playerScores.size()).append(":");
         for (String player : playerScores.keySet()) {
             sb.append(player).append(":");
             sb.append(playerScores.get(player)).append(":");
         }
 
-        // Add game state
         sb.append(gameStarted).append(":");
         sb.append(gameTime);
 
         return sb.toString();
     }
 
-    // Method to check if a player ate food
     public synchronized void checkFoodCollision(String playerId, int x, int y) {
         Rectangle playerBounds = new Rectangle(x, y, 80, 50);
         for (Food food : foods) {

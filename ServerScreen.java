@@ -96,11 +96,10 @@ public class ServerScreen extends JPanel {
             ServerSocket server = new ServerSocket(portNumber);
             System.out.println("Server started on port " + portNumber);
             
-            // Start a repaint thread for server UI
             new Thread(() -> {
                 while (true) {
                     try {
-                        Thread.sleep(100); // 10 FPS for server UI
+                        Thread.sleep(100); 
                         numUsers = manager.getServerThreads().size();
                         repaint();
                     } catch (InterruptedException e) {
