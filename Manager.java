@@ -129,7 +129,8 @@ public class Manager {
             }
         }
 
-        if (rand.nextDouble() < 0.1 && foods.size() < 50) {
+        //random food spawn logic
+        if (rand.nextDouble() < 0.07) {
             Food newFood = new Food(rand.nextInt(700) + 50, rand.nextInt(500) + 50);
             foods.add(newFood);
             broadcastNewFood(newFood.x, newFood.y, false);
@@ -148,12 +149,12 @@ public class Manager {
         }
     }
 
-    public synchronized void addServerThread(ServerThread thread) {
+    public void addServerThread(ServerThread thread) {
         serverThreads.add(thread);
         broadcast("READY:" + readyCount + ":" + serverThreads.size());
     }
 
-    public synchronized void removeServerThread(ServerThread thread) {
+    public void removeServerThread(ServerThread thread) {
         serverThreads.remove(thread);
         if (thread.isReady()) {
             readyCount--;
@@ -168,7 +169,7 @@ public class Manager {
         }
     }
 
-    public synchronized void playerReady() {
+    public void playerReady() {
         readyCount++;
         broadcast("READY:" + readyCount + ":" + serverThreads.size());
 
@@ -194,7 +195,7 @@ public class Manager {
         }, 1000, 1000);
     }
 
-    public synchronized void updateScore(String player, int score) {
+    public void updateScore(String player, int score) {
         playerScores.put(player, score);
         for (Integer s : playerScores.values()) {
             totalScore += s;
@@ -202,12 +203,12 @@ public class Manager {
         broadcast("SCORE:" + player + ":" + score);
     }
 
-    public synchronized void incrementAnimals() {
+    public void incrementAnimals() {
         numAnimals++;
         broadcast("ANIMALCOUNT:" + numAnimals);
     }
 
-    public synchronized void gameOver() {
+    public void gameOver() {
         gameStarted = false;
         if (gameTimer != null) {
             gameTimer.cancel();
@@ -216,7 +217,7 @@ public class Manager {
         broadcast("GAMEOVER");
     }
 
-    public synchronized void resetRequest() {
+    public void resetRequest() {
         resetRequests++;
         if (resetRequests == serverThreads.size() && serverThreads.size() > 0) {
             resetGame();
@@ -342,7 +343,7 @@ public class Manager {
         return sb.toString();
     }
 
-    public synchronized void checkFoodCollision(String playerId, int x, int y) {
+    public void checkFoodCollision(String playerId, int x, int y) {
         Rectangle playerBounds = new Rectangle(x, y, 80, 50);
         for (Food food : foods) {
             if (!food.eaten) {
@@ -359,7 +360,7 @@ public class Manager {
         }
     }
 
-    public synchronized void handlePlayerEnemyCollision(String playerId, String enemyId) {
+    public void handlePlayerEnemyCollision(String playerId, String enemyId) {
         for (int i = 0; i < enemies.size(); i++) {
             Enemy enemy = enemies.get(i);
             if (enemy.id.equals(enemyId)) {
