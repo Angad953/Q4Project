@@ -2,9 +2,9 @@ import java.awt.*;
 import java.util.*;
 
 public class Manager {
-    public int totalScore; 
+    public int totalScore;
     public int numAnimals;
-    public ArrayList<ServerThread> serverThreads; 
+    public ArrayList<ServerThread> serverThreads;
     private HashMap<String, Integer> playerScores;
     private ArrayList<Food> foods;
     private ArrayList<Enemy> enemies;
@@ -16,7 +16,6 @@ public class Manager {
     private long nextEnemySpawnTime = 0;
     private static final long ENEMY_SPAWN_INTERVAL = 5000;
 
-    // Inner class for food objects on the server
     public class Food {
         int x, y;
         boolean eaten;
@@ -37,24 +36,23 @@ public class Manager {
 
         public Enemy() {
             this.id = "enemy_" + System.currentTimeMillis() % 10000 + "_" + (int) (Math.random() * 1000);
-            this.size = 50; // Default size
+            this.size = 50;
             Random rand = new Random();
-            // Enemies spawn at the edges
             int side = rand.nextInt(4);
             switch (side) {
-                case 0: // Top
+                case 0:
                     this.x = rand.nextInt(800);
                     this.y = -this.size;
                     break;
-                case 1: // Right
+                case 1:
                     this.x = 800;
                     this.y = rand.nextInt(600);
                     break;
-                case 2: // Bottom
+                case 2:
                     this.x = rand.nextInt(800);
                     this.y = 600;
                     break;
-                case 3: // Left
+                case 3:
                     this.x = -this.size;
                     this.y = rand.nextInt(600);
                     break;
@@ -72,15 +70,13 @@ public class Manager {
         gameStarted = false;
         readyCount = 0;
         resetRequests = 0;
-        gameTime = 120; 
+        gameTime = 120;
 
-        // Preload some food
         for (int i = 0; i < 20; i++) {
             Random rand = new Random();
             foods.add(new Food(rand.nextInt(700) + 50, rand.nextInt(500) + 50));
         }
 
-        // game logic thread
         new Thread(() -> {
             while (true) {
                 try {
@@ -121,7 +117,6 @@ public class Manager {
             broadcastEnemyPosition(enemy.id, enemy.x, enemy.y, enemy.size);
         }
 
-        // enemy/food collision check
         for (Enemy enemy : enemies) {
             Rectangle enemyBounds = new Rectangle(enemy.x, enemy.y, enemy.size, enemy.size);
             for (Food food : foods) {
@@ -135,8 +130,8 @@ public class Manager {
             }
         }
 
-        // food spawn logic
-        if (rand.nextDouble() < 0.05 && foods.size() < 50) {
+        // food spawn
+        if (rand.nextDouble() < 0.1 && foods.size() < 50) {
             Food newFood = new Food(rand.nextInt(700) + 50, rand.nextInt(500) + 50);
             foods.add(newFood);
             broadcastNewFood(newFood.x, newFood.y, false);
@@ -144,20 +139,16 @@ public class Manager {
 
         long currentTime = System.currentTimeMillis();
 
-        //enemy spawn logic
+        // enemy spawn logic
         if (gameStarted && currentTime >= nextEnemySpawnTime && enemies.size() < 5) {
             Enemy newEnemy = new Enemy();
             enemies.add(newEnemy);
             broadcastEnemyPosition(newEnemy.id, newEnemy.x, newEnemy.y, newEnemy.size);
-
             nextEnemySpawnTime = currentTime + ENEMY_SPAWN_INTERVAL;
-            System.out.println("[" + currentTime + "] Enemy spawned. Total enemies: " + enemies.size() +
-                    ". Next spawn at: " + nextEnemySpawnTime);
         }
 
-
         if (foods.size() > 50) {
-            foods.remove(0); 
+            foods.remove(0);
         }
     }
 
@@ -193,7 +184,6 @@ public class Manager {
     private void startGame() {
         gameStarted = true;
         broadcast("START");
-
         gameTime = 120;
         gameTimer = new Timer();
         gameTimer.schedule(new TimerTask() {
@@ -205,12 +195,11 @@ public class Manager {
                     this.cancel();
                 }
             }
-        }, 1000, 1000); 
+        }, 1000, 1000);
     }
 
     public synchronized void updateScore(String player, int score) {
         playerScores.put(player, score);
-        totalScore = 0;
         for (Integer s : playerScores.values()) {
             totalScore += s;
         }
@@ -233,7 +222,6 @@ public class Manager {
 
     public synchronized void resetRequest() {
         resetRequests++;
-
         if (resetRequests == serverThreads.size() && serverThreads.size() > 0) {
             resetGame();
         }
@@ -258,7 +246,6 @@ public class Manager {
         for (int i = 0; i < 20; i++) {
             foods.add(new Food(rand.nextInt(700) + 50, rand.nextInt(500) + 50));
         }
-
         broadcast("RESET");
     }
 
@@ -342,7 +329,6 @@ public class Manager {
             sb.append(food.eaten).append(":");
         }
 
-        // Add enemy count and enemy data
         sb.append(enemies.size()).append(":");
         for (Enemy enemy : enemies) {
             sb.append(enemy.id).append(":");
@@ -372,7 +358,6 @@ public class Manager {
                     food.eaten = true;
                     broadcastNewFood(food.x, food.y, true);
 
-                    // Update player's score
                     Integer score = playerScores.getOrDefault(playerId, 0);
                     score++;
                     updateScore(playerId, score);
@@ -381,22 +366,16 @@ public class Manager {
         }
     }
 
-
     public synchronized void handlePlayerEnemyCollision(String playerId, String enemyId) {
-        // Find the enemy
         for (int i = 0; i < enemies.size(); i++) {
             Enemy enemy = enemies.get(i);
             if (enemy.id.equals(enemyId)) {
-                // Remove the enemy immediately on collision
                 enemies.remove(i);
 
-                // IMPORTANT: Broadcast removal to ALL clients
                 broadcast("REMOVE_ENEMY:" + enemyId);
 
-                // Award points and update counters
                 incrementAnimals();
 
-                // Give player a point for defeating an animal
                 Integer score = playerScores.getOrDefault(playerId, 0);
                 score++;
                 updateScore(playerId, score);
