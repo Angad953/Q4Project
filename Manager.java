@@ -80,7 +80,7 @@ public class Manager {
         new Thread(() -> {
             while (true) {
                 try {
-                    Thread.sleep(100); // 10 updates per second
+                    Thread.sleep(100); 
                     if (gameStarted) {
                         updateGameState();
                     }
@@ -94,7 +94,6 @@ public class Manager {
     private void updateGameState() {
         Random rand = new Random();
 
-        // enemy movement logic
         for (Enemy enemy : enemies) {
             int centerX = 400;
             int centerY = 300;
@@ -130,16 +129,13 @@ public class Manager {
             }
         }
 
-        // food spawn
         if (rand.nextDouble() < 0.1 && foods.size() < 50) {
             Food newFood = new Food(rand.nextInt(700) + 50, rand.nextInt(500) + 50);
             foods.add(newFood);
             broadcastNewFood(newFood.x, newFood.y, false);
         }
-
         long currentTime = System.currentTimeMillis();
 
-        // enemy spawn logic
         if (gameStarted && currentTime >= nextEnemySpawnTime && enemies.size() < 5) {
             Enemy newEnemy = new Enemy();
             enemies.add(newEnemy);
@@ -234,14 +230,11 @@ public class Manager {
         totalScore = 0;
         numAnimals = 0;
         playerScores.clear();
-
         for (ServerThread thread : serverThreads) {
             thread.setReady(false);
         }
-
         foods.clear();
         enemies.clear();
-
         Random rand = new Random();
         for (int i = 0; i < 20; i++) {
             foods.add(new Food(rand.nextInt(700) + 50, rand.nextInt(500) + 50));

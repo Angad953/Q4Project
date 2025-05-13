@@ -1,16 +1,9 @@
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Graphics;
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import javax.swing.JPanel;
 
 public class ClientScreen extends JPanel implements KeyListener, Runnable {
@@ -24,14 +17,14 @@ public class ClientScreen extends JPanel implements KeyListener, Runnable {
     private ArrayList<Food> foods;
     private ArrayList<Animal> enemies;
     private HashMap<String, Integer> playerScores;
-    private HashMap<String, Animal> otherPlayers; // Store other player hippos
+    private HashMap<String, Animal> otherPlayers;
     private Socket socket;
     private PrintWriter out;
     private BufferedReader in;
     private boolean isReady;
     private Thread gameThread;
     private int energyLevel;
-    private String playerId; // Unique ID for this player
+    private String playerId; 
 
     public ClientScreen() {
         this.setPreferredSize(new Dimension(800, 600));
@@ -47,24 +40,18 @@ public class ClientScreen extends JPanel implements KeyListener, Runnable {
         gameStatus = "PRESS SPACE TO READY UP";
         isReady = false;
         energyLevel = 100;
-
-        // Generate unique player ID
         playerId = "Player" + System.currentTimeMillis() % 10000;
-
-        // Initialize game objects
         foods = new ArrayList<>();
         enemies = new ArrayList<>();
         playerScores = new HashMap<>();
         otherPlayers = new HashMap<>();
 
-        // Create player hippo with random position
         int x = 100 + (int) (Math.random() * 600);
         int y = 100 + (int) (Math.random() * 400);
         Color[] hippoColors = { Color.YELLOW, Color.PINK };
         int colorIndex = (int) (Math.random() * hippoColors.length);
         playerHippo = new Animal(x, y, hippoColors[colorIndex], playerId);
 
-        // Preload some food
         for (int i = 0; i < 20; i++) {
             foods.add(new Food());
         }
@@ -75,12 +62,8 @@ public class ClientScreen extends JPanel implements KeyListener, Runnable {
             socket = new Socket("localhost", 1024);
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
-            // Start the receiving thread
             gameThread = new Thread(this);
             gameThread.start();
-
-            // Send initial connection message with position and color
             out.println("CONNECT:" + playerId + ":" + playerHippo.getX() + ":" +
                     playerHippo.getY() + ":" + playerHippo.getColorAsString());
         } catch (IOException e) {
@@ -93,7 +76,6 @@ public class ClientScreen extends JPanel implements KeyListener, Runnable {
         super.paintComponent(g);
 
         if (!gameStarted) {
-            // Draw start screen
             g.setColor(Color.BLACK);
             g.setFont(new Font("Arial", Font.BOLD, 30));
             g.drawString("HUNGRY HUNGRY HIPPOS", 200, 200);
@@ -108,7 +90,6 @@ public class ClientScreen extends JPanel implements KeyListener, Runnable {
                 g.drawString("YOU ARE READY!", 310, 350);
             }
         } else if (gameOver) {
-            // Draw game over screen
             g.setColor(Color.BLACK);
             g.setFont(new Font("Arial", Font.BOLD, 30));
             g.drawString("GAME OVER", 300, 200);
@@ -125,12 +106,10 @@ public class ClientScreen extends JPanel implements KeyListener, Runnable {
                 food.draw(g);
             }
 
-            // draw animals
             for (Animal enemy : enemies) {
                 enemy.draw(g);
             }
 
-            // draw other players
             for (Animal otherPlayer : otherPlayers.values()) {
                 otherPlayer.draw(g);
                 g.setColor(Color.BLACK);
@@ -173,7 +152,6 @@ public class ClientScreen extends JPanel implements KeyListener, Runnable {
             }
         }
 
-        // Draw team score
         g.setFont(new Font("Arial", Font.BOLD, 18));
         g.drawString("Team Score: " + getTotalScore(), getWidth() / 2 - 70, 30);
     }
@@ -187,7 +165,6 @@ public class ClientScreen extends JPanel implements KeyListener, Runnable {
     }
 
     private void updateGame() {
-        // Move enemies
         for (int i = 0; i < enemies.size(); i++) {
             Animal enemy = enemies.get(i);
             enemy.move();
@@ -352,7 +329,7 @@ public class ClientScreen extends JPanel implements KeyListener, Runnable {
             playerScores.put(player, playerScore);
 
             if (player.equals(playerId)) {
-                energyLevel++; 
+                energyLevel++;
                 score = playerScore;
             }
 
@@ -374,22 +351,14 @@ public class ClientScreen extends JPanel implements KeyListener, Runnable {
             // Full game state sync from server
             syncGameState(parts);
         }
-
     }
 
     private void syncGameState(String[] parts) {
         try {
             int index = 1;
-            System.out.println("Processing SYNC message with " + parts.length + " parts");
-
-            // Read player count
             int playerCount = Integer.parseInt(parts[index++]);
-            System.out.println("Syncing " + playerCount + " players");
-
-            // Clear existing data
             otherPlayers.clear();
 
-            // Read each player
             for (int i = 0; i < playerCount && index + 3 < parts.length; i++) {
                 String id = parts[index++];
                 int x = Integer.parseInt(parts[index++]);
@@ -402,11 +371,9 @@ public class ClientScreen extends JPanel implements KeyListener, Runnable {
                 }
             }
 
-            // Read food count
             if (index < parts.length) {
                 int foodCount = Integer.parseInt(parts[index++]);
 
-                // Clear existing food
                 foods.clear();
 
                 for (int i = 0; i < foodCount && index + 2 < parts.length; i++) {
@@ -420,7 +387,6 @@ public class ClientScreen extends JPanel implements KeyListener, Runnable {
                 }
             }
 
-            // Read enemy count
             if (index < parts.length) {
                 int enemyCount = Integer.parseInt(parts[index++]);
                 enemies.clear();
@@ -506,12 +472,10 @@ public class ClientScreen extends JPanel implements KeyListener, Runnable {
 
     @Override
     public void keyReleased(KeyEvent e) {
-        // Not implemented but required by KeyListener interface
     }
 
     @Override
     public void keyTyped(KeyEvent e) {
-        // Not implemented but required by KeyListener interface
     }
 
     public void updateScore(int newScore) {
