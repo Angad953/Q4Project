@@ -4,10 +4,10 @@ import java.util.*;
 public class Manager {
     public int totalScore;
     public int numAnimals;
-    public ArrayList<ServerThread> serverThreads;
+    public MyArrayList<ServerThread> serverThreads;
     private HashMap<String, Integer> playerScores;
-    private ArrayList<Food> foods;
-    private ArrayList<Enemy> enemies;
+    private MyArrayList<Food> foods;
+    private MyArrayList<Enemy> enemies;
     private boolean gameStarted;
     private int readyCount;
     private int resetRequests;
@@ -63,10 +63,10 @@ public class Manager {
     public Manager() {
         totalScore = 0;
         numAnimals = 0;
-        serverThreads = new ArrayList<>();
+        serverThreads = new MyArrayList<>();
         playerScores = new HashMap<>();
-        foods = new ArrayList<>();
-        enemies = new ArrayList<>();
+        foods = new MyArrayList<>();
+        enemies = new MyArrayList<>();
         gameStarted = false;
         readyCount = 0;
         resetRequests = 0;
@@ -387,7 +387,7 @@ public class Manager {
         return gameTime;
     }
 
-    public ArrayList<ServerThread> getServerThreads() {
+    public MyArrayList<ServerThread> getServerThreads() {
         return serverThreads;
     }
 
@@ -395,11 +395,11 @@ public class Manager {
         return playerScores;
     }
 
-    public ArrayList<Food> getFoods() {
+    public MyArrayList<Food> getFoods() {
         return foods;
     }
 
-    public ArrayList<Enemy> getEnemies() {
+    public MyArrayList<Enemy> getEnemies() {
         return enemies;
     }
 }
