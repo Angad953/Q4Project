@@ -345,7 +345,7 @@ public class ClientScreen extends JPanel implements KeyListener, Runnable {
         } else if (parts[0].equals("GAMEOVER")) {
             gameOver = true;
 
-        } else if (parts[0].equals("LOSS")) {
+        } else if (parts[0].equals("DEAD")) {
             loss = true;
             gameOver = true;
             gameStatus = "YOU LOSE";
@@ -514,8 +514,8 @@ public class ClientScreen extends JPanel implements KeyListener, Runnable {
         if(gameStarted && energyLevel <= 0){
             loss = true;
             gameOver = true;
-            gameStatus = "LOSS";
-            out.println("LOSS:" + playerId);
+            gameStatus = "DEAD";
+            out.println("DEAD:" + playerId);
             repaint();
         }
     }

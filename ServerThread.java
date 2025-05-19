@@ -99,6 +99,7 @@ public class ServerThread implements Runnable {
             manager.handlePlayerEnemyCollision(player, enemyId);
         } else if (parts[0].equals("ALIVE")) {
         } else if(parts [0].equals("DEAD")){
+            System.out.println("dead");
             manager.loss();
         }
         else if (parts[0].equals("GAMEOVER")) {

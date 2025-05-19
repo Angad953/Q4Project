@@ -223,7 +223,7 @@ public class Manager {
             gameTimer.cancel();
             gameTimer = null;
         }
-        broadcast("LOSS");
+        broadcast("DEAD");
     }
 
     public void resetRequest() {
