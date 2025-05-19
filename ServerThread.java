@@ -14,7 +14,7 @@ public class ServerThread implements Runnable {
     private boolean isAlive;
     private int playerX, playerY;
     private String playerColor;
-    
+
     public ServerThread(Socket socket, Manager manager) {
         this.socket = socket;
         this.manager = manager;
@@ -23,8 +23,8 @@ public class ServerThread implements Runnable {
         this.playerId = null;
         this.playerX = 0;
         this.playerY = 0;
-        this.playerColor = "255,255,255"; 
-        
+        this.playerColor = "255,255,255"; // Default white
+
         try {
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -32,11 +32,11 @@ public class ServerThread implements Runnable {
             e.printStackTrace();
         }
     }
-    
+
     public ServerThread(Socket socket) {
         this(socket, null);
     }
-    
+
     @Override
     public void run() {
         try {
@@ -45,7 +45,6 @@ public class ServerThread implements Runnable {
                 processMessage(inputLine);
             }
         } catch (IOException e) {
-            // Client disconnected
             if (manager != null) {
                 manager.removeServerThread(this);
                 if (playerId != null) {
@@ -54,23 +53,24 @@ public class ServerThread implements Runnable {
             }
         }
     }
-    
+
     private void processMessage(String message) {
-        if (manager == null) return;
-        
+        if (manager == null)
+            return;
+
         String[] parts = message.split(":");
-        
+
         if (parts[0].equals("CONNECT")) {
             playerId = parts[1];
             playerX = Integer.parseInt(parts[2]);
             playerY = Integer.parseInt(parts[3]);
             playerColor = parts[4];
-            
+
             manager.addPlayer(playerId);
             System.out.println("Player connected: " + playerId);
-            
+
             sendMessage(manager.getCurrentGameState());
-            
+
             manager.broadcastPlayerPosition(playerId, playerX, playerY, playerColor);
         } else if (parts[0].equals("READY")) {
             playerId = parts[1];
@@ -80,8 +80,9 @@ public class ServerThread implements Runnable {
             playerId = parts[1];
             playerX = Integer.parseInt(parts[2]);
             playerY = Integer.parseInt(parts[3]);
-            
+
             manager.broadcastPlayerPosition(playerId, playerX, playerY, playerColor);
+
             manager.checkFoodCollision(playerId, playerX, playerY);
         } else if (parts[0].equals("SCORE")) {
             String player = parts[1];
@@ -97,51 +98,56 @@ public class ServerThread implements Runnable {
             String enemyId = parts[2];
             manager.handlePlayerEnemyCollision(player, enemyId);
         } else if (parts[0].equals("ALIVE")) {
-        } else if (parts[0].equals("GAMEOVER")) {
+        } else if(parts [0].equals("DEAD")){
+            manager.loss();
+        }
+        else if (parts[0].equals("GAMEOVER")) {
+
             manager.gameOver();
         } else if (parts[0].equals("RESET")) {
             isReady = false;
             manager.resetRequest();
         }
     }
-    
+
     public void sendMessage(String message) {
         out.println(message);
     }
-    
+
     public boolean isReady() {
         return isReady;
     }
-    
+
     public void setReady(boolean ready) {
         isReady = ready;
     }
-    
+
     public String getPlayerId() {
         return playerId;
     }
-    
+
     public int getPlayerX() {
         return playerX;
     }
-    
+
     public int getPlayerY() {
         return playerY;
     }
-    
+
     public String getPlayerColor() {
         return playerColor;
     }
-    
+
+    // Additional helper methods
     public void setPlayerId(String playerId) {
         this.playerId = playerId;
     }
-    
+
     public void setPlayerPosition(int x, int y) {
         this.playerX = x;
         this.playerY = y;
     }
-    
+
     public void setPlayerColor(String color) {
         this.playerColor = color;
     }

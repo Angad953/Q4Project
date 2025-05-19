@@ -12,10 +12,11 @@ public class ClientScreen extends JPanel implements KeyListener, Runnable {
     private int numAnimals;
     private boolean gameStarted;
     private boolean gameOver;
+    private boolean loss;
     private String gameStatus;
     private Animal playerHippo;
-    private ArrayList<Food> foods;
-    private ArrayList<Animal> enemies;
+    private MyArrayList<Food> foods;
+    private MyArrayList<Animal> enemies;
     private HashMap<String, Integer> playerScores;
     private HashMap<String, Animal> otherPlayers;
     private Socket socket;
@@ -24,7 +25,7 @@ public class ClientScreen extends JPanel implements KeyListener, Runnable {
     private boolean isReady;
     private Thread gameThread;
     private int energyLevel;
-    private String playerId; 
+    private String playerId;
 
     public ClientScreen() {
         this.setPreferredSize(new Dimension(800, 600));
@@ -37,12 +38,13 @@ public class ClientScreen extends JPanel implements KeyListener, Runnable {
         numAnimals = 0;
         gameStarted = false;
         gameOver = false;
+        loss = false;
         gameStatus = "PRESS SPACE TO READY UP";
         isReady = false;
         energyLevel = 100;
         playerId = "Player" + System.currentTimeMillis() % 10000;
-        foods = new ArrayList<>();
-        enemies = new ArrayList<>();
+        foods = new MyArrayList<>();
+        enemies = new MyArrayList<>();
         playerScores = new HashMap<>();
         otherPlayers = new HashMap<>();
 
@@ -87,12 +89,19 @@ public class ClientScreen extends JPanel implements KeyListener, Runnable {
             g.drawString("Press SPACE to ready up", 280, 500);
             if (isReady) {
                 g.setColor(Color.GREEN);
-                g.drawString("YOU ARE READY!", 310, 350);
+                g.drawString("YOU ARE READY!", 310, 400);
             }
-        } else if (gameOver) {
+        } else if (gameOver && !loss) {
             g.setColor(Color.BLACK);
             g.setFont(new Font("Arial", Font.BOLD, 30));
             g.drawString("GAME OVER", 300, 200);
+            g.setFont(new Font("Arial", Font.PLAIN, 20));
+            g.drawString("Final Score: " + score, 320, 250);
+            g.drawString("Press R to play again", 300, 300);
+        } else if (loss) {
+            g.setColor(Color.RED);
+            g.setFont(new Font("Arial", Font.BOLD, 30));
+            g.drawString("YOU LOSE", 300, 200);
             g.setFont(new Font("Arial", Font.PLAIN, 20));
             g.drawString("Final Score: " + score, 320, 250);
             g.drawString("Press R to play again", 300, 300);
@@ -181,17 +190,10 @@ public class ClientScreen extends JPanel implements KeyListener, Runnable {
                 i--;
             }
         }
-
-        for (Food food : foods) {
-            if (!food.isEaten() && playerHippo.getBounds().intersects(food.getBounds())) {
-                out.println("SCORE:" + playerId + ":" + score);
-                food.setEaten(true);
-            }
-        }
-
         out.println("POS:" + playerId + ":" + playerHippo.getX() + ":" + playerHippo.getY());
 
-        // Update visual elements
+        setLoss();
+
         repaint();
     }
 
@@ -204,7 +206,6 @@ public class ClientScreen extends JPanel implements KeyListener, Runnable {
             }
         } catch (IOException e) {
             e.printStackTrace();
-            // Handle disconnection
             gameStarted = false;
             gameOver = true;
             gameStatus = "DISCONNECTED FROM SERVER";
@@ -225,7 +226,7 @@ public class ClientScreen extends JPanel implements KeyListener, Runnable {
                         energyLevel--;
                         out.println("ALIVE:" + playerId);
 
-                        if (time <= 0) {
+                        if (time <= 0 && !loss) {
                             gameOver = true;
                             out.println("GAMEOVER:" + playerId);
                         }
@@ -344,6 +345,13 @@ public class ClientScreen extends JPanel implements KeyListener, Runnable {
         } else if (parts[0].equals("GAMEOVER")) {
             gameOver = true;
 
+        } else if (parts[0].equals("LOSS")) {
+            loss = true;
+            gameOver = true;
+            gameStatus = "YOU LOSE";
+            repaint();
+
+        } else if (parts[0].equals("ALIVE")) {
         } else if (parts[0].equals("RESET")) {
             resetGame();
 
@@ -496,5 +504,19 @@ public class ClientScreen extends JPanel implements KeyListener, Runnable {
 
     public int getNumAnimals() {
         return numAnimals;
+    }
+
+    public int getEnergyLevel() {
+        return energyLevel;
+    }
+
+    public void setLoss(){
+        if(gameStarted && energyLevel <= 0){
+            loss = true;
+            gameOver = true;
+            gameStatus = "LOSS";
+            out.println("LOSS:" + playerId);
+            repaint();
+        }
     }
 }

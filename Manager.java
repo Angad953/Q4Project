@@ -217,6 +217,15 @@ public class Manager {
         broadcast("GAMEOVER");
     }
 
+    public void loss() {
+        gameStarted = false;
+        if (gameTimer != null) {
+            gameTimer.cancel();
+            gameTimer = null;
+        }
+        broadcast("LOSS");
+    }
+
     public void resetRequest() {
         resetRequests++;
         if (resetRequests == serverThreads.size() && serverThreads.size() > 0) {
