@@ -5,6 +5,11 @@ import java.io.*;
 import java.net.Socket;
 import java.util.*;
 import javax.swing.JPanel;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 
 public class ClientScreen extends JPanel implements KeyListener, Runnable {
     private int score;
@@ -218,6 +223,7 @@ public class ClientScreen extends JPanel implements KeyListener, Runnable {
 
         if (parts[0].equals("START")) {
             gameStarted = true;
+            startSound();
             new Thread(() -> {
                 while (time > 0 && gameStarted && !gameOver) {
                     try {
@@ -256,6 +262,7 @@ public class ClientScreen extends JPanel implements KeyListener, Runnable {
             for (Food food : foods) {
                 if (food.getX() == x && food.getY() == y) {
                     food.setEaten(eaten);
+                    chompSound();
                     found = true;
                     break;
                 }
@@ -422,9 +429,11 @@ public class ClientScreen extends JPanel implements KeyListener, Runnable {
     private void resetGame() {
         score = 0;
         time = 120;
+        energyLevel = 100;
         numAnimals = 0;
         gameStarted = false;
         gameOver = false;
+        loss = false; 
         gameStatus = "PRESS SPACE TO READY UP";
         isReady = false;
         foods.clear();
@@ -435,10 +444,6 @@ public class ClientScreen extends JPanel implements KeyListener, Runnable {
         int x = 100 + (int) (Math.random() * 600);
         int y = 100 + (int) (Math.random() * 400);
         playerHippo.setPosition(x, y);
-
-        for (int i = 0; i < 20; i++) {
-            foods.add(new Food());
-        }
         repaint();
     }
 
@@ -518,5 +523,51 @@ public class ClientScreen extends JPanel implements KeyListener, Runnable {
             out.println("DEAD:" + playerId);
             repaint();
         }
+    }
+    private static Clip chomp;
+    private static Clip start;
+    private static Clip endSound;
+
+    static {
+        InputStream chompInputStream = ClientScreen.class.getClassLoader().getResourceAsStream("EditedChomp.wav");
+        InputStream startInputStream = ClientScreen.class.getClassLoader().getResourceAsStream("CavalryCharge.wav");
+        InputStream endInputStream = ClientScreen.class.getClassLoader().getResourceAsStream("ENDMATCH.wav");
+        try {
+            AudioInputStream chompAudioInputStream = AudioSystem.getAudioInputStream(chompInputStream);
+            AudioInputStream startAudioInputStream = AudioSystem.getAudioInputStream(startInputStream);
+            AudioInputStream endAudioInputStream = AudioSystem.getAudioInputStream(endInputStream);
+            chomp = AudioSystem.getClip();
+            chomp.open(chompAudioInputStream);
+            start = AudioSystem.getClip();
+            start.open(startAudioInputStream);
+            endSound = AudioSystem.getClip();
+            endSound.open(endAudioInputStream);
+
+        } catch (IOException | UnsupportedAudioFileException | LineUnavailableException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static boolean started = false;
+
+    public static void chompSound() {
+        chomp.loop(0);
+        chomp.setFramePosition(0);
+        if (!started) {
+            chomp.start();
+            started = true;
+        }
+    }
+
+    public static void startSound() {
+        start.stop();
+        start.setFramePosition(0);
+        start.start();
+    }
+
+    public static void endSound() {
+        endSound.stop();
+        endSound.setFramePosition(0);
+        endSound.start();
     }
 }
