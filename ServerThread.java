@@ -23,7 +23,7 @@ public class ServerThread implements Runnable {
         this.playerId = null;
         this.playerX = 0;
         this.playerY = 0;
-        this.playerColor = "255,255,255"; // Default white
+        this.playerColor = "255,255,255";
 
         try {
             out = new PrintWriter(socket.getOutputStream(), true);
