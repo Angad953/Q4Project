@@ -5,7 +5,7 @@ public class Manager {
     public int totalScore;
     public int numAnimals;
     public MyArrayList<ServerThread> serverThreads;
-    private HashMap<String, Integer> playerScores;
+    private MyHashMap<String, Integer> playerScores;
     private MyArrayList<Food> foods;
     private MyArrayList<Enemy> enemies;
     private boolean gameStarted;
@@ -64,7 +64,7 @@ public class Manager {
         totalScore = 0;
         numAnimals = 0;
         serverThreads = new MyArrayList<>();
-        playerScores = new HashMap<>();
+        playerScores = new MyHashMap<>();
         foods = new MyArrayList<>();
         enemies = new MyArrayList<>();
         gameStarted = false;
@@ -400,7 +400,7 @@ public class Manager {
         return serverThreads;
     }
 
-    public HashMap<String, Integer> getPlayerScores() {
+    public MyHashMap<String, Integer> getPlayerScores() {
         return playerScores;
     }
 

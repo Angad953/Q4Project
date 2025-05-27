@@ -1,7 +1,6 @@
 import java.awt.*;
 import java.net.*;
 import javax.swing.*;
-import java.util.*;
 
 public class ServerScreen extends JPanel {
     private int numUsers;
@@ -79,7 +78,7 @@ public class ServerScreen extends JPanel {
         
         g.setFont(new Font("Arial", Font.PLAIN, 14));
         yPos = 350;
-        HashMap<String, Integer> scores = manager.getPlayerScores();
+        MyHashMap<String, Integer> scores = manager.getPlayerScores();
         for (String player : scores.keySet()) {
             g.drawString(player + ": " + scores.get(player), 400, yPos);
             yPos += 20;
