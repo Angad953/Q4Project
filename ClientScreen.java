@@ -32,7 +32,6 @@ public class ClientScreen extends JPanel implements KeyListener, Runnable {
     private Thread gameThread;
     private int energyLevel;
     private String playerId;
-    private int highScore;
     private int winScore;
 
     public ClientScreen() {
@@ -82,40 +81,9 @@ public class ClientScreen extends JPanel implements KeyListener, Runnable {
             gameStatus = "CONNECTION FAILED";
         }
     }
-/*
-    private void readHighScore(String fileName){
-        try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
-            try {
-                if (br.readLine() == null) {
-                    System.out.println("File is empty");
-                    return;
-                }
-                String line = br.readLine();
-                if (line != null) {
-                    highScore = Integer.parseInt(line.trim());
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void writeHighScore(String fileName){
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(fileName))) {
-            oos.writeObject(highScore);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    } */
-
-
 
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-
-        //readHighScore("high.txt");
 
         if(yPressed){
             energyLevel = 0;
@@ -141,7 +109,6 @@ public class ClientScreen extends JPanel implements KeyListener, Runnable {
             g.drawString("YOU WON!", 300, 200);
             g.setFont(new Font("Arial", Font.PLAIN, 20));
             g.drawString("Final Score: " + score, 320, 250);
-            g.drawString("High Score: " + highScore, 320, 275);
             g.drawString("Press R to play again", 300, 300);
 
         } else if (loss) {
@@ -150,7 +117,6 @@ public class ClientScreen extends JPanel implements KeyListener, Runnable {
             g.drawString("YOU LOSE", 300, 200);
             g.setFont(new Font("Arial", Font.PLAIN, 20));
             g.drawString("Final Score: " + score, 320, 250);
-            g.drawString("High Score: " + highScore, 320, 275);
             g.drawString("Press R to play again", 300, 300);
         } else {
             g.setColor(new Color(200, 240, 200));
@@ -560,10 +526,6 @@ public class ClientScreen extends JPanel implements KeyListener, Runnable {
 
     public void setLoss() {
         if (gameStarted && energyLevel <= 0) {
-            /*if (score > highScore) {
-                highScore = score;
-                writeHighScore("high.txt");
-            }*/
             if (score >= winScore) {
                 gameOver = true;
                 gameStatus = "YOU WIN";
@@ -583,9 +545,9 @@ public class ClientScreen extends JPanel implements KeyListener, Runnable {
     private static Clip endSound;
 
     static {
-        InputStream chompInputStream = ClientScreen.class.getClassLoader().getResourceAsStream("sample.wav");
-        InputStream startInputStream = ClientScreen.class.getClassLoader().getResourceAsStream("sample.wav");
-        InputStream endInputStream = ClientScreen.class.getClassLoader().getResourceAsStream("sample.wav");
+        InputStream chompInputStream = ClientScreen.class.getClassLoader().getResourceAsStream("EditedChomp.wav");
+        InputStream startInputStream = ClientScreen.class.getClassLoader().getResourceAsStream("CavalryCharge.wav");
+        InputStream endInputStream = ClientScreen.class.getClassLoader().getResourceAsStream("ENDMATCH.wav");
         try {
             AudioInputStream chompAudioInputStream = AudioSystem.getAudioInputStream(chompInputStream);
             AudioInputStream startAudioInputStream = AudioSystem.getAudioInputStream(startInputStream);
