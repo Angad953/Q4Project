@@ -86,6 +86,16 @@ public class MyHashMap<K, V> {
         size = 0;
     }
 
+    public V getOrDefault(K key, V defaultValue) {
+        V value = get(key);
+        if (value != null) {
+            return value;
+        } else {
+            return defaultValue;
+        }
+    }
+
+
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
